@@ -59,10 +59,30 @@
 
     <el-table v-loading="loading" :data="customerList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="客户编号" align="center" prop="id" />
+      <!-- <el-table-column label="客户编号" align="center" prop="id" /> -->
       <el-table-column label="客户名称" align="center" prop="cname" />
 
-      <!-- <el-table-column label="客户详细" align="center" prop="columnjson" /> -->
+      <el-table-column label="客户详细信息" align="center" prop="columnjson" >
+        <template #default="scope">
+          <div style="display: flex; align-items: center">
+            <template v-for="(ele, index) in JSON.parse(scope.row.columnjson)" :key="ele.k1">
+              <!-- {{ ele.k1 }}: {{ ele.v }} -->
+              {{ ele.v }}/ 
+            </template>
+          </div>
+        </template>
+      </el-table-column>
+
+<!--       <el-table-column label="客户详细" align="center" prop="columnjson" >
+        <template #default="scope">
+          <div style="display: flex; align-items: center">
+            <el-icon><timer /></el-icon>
+            <span v-for="(ele, index) in JSON.parse(scope.row.columnjson)" :key="key">
+              {{ ele.k1 }}: {{ ele.v }}
+            </span>
+          </div>
+        </template>
+      </el-table-column>  -->
 
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
@@ -94,7 +114,6 @@
           <el-input v-model="e.v" placeholder="新增字段值" style="flex:1"/>
         </div>        
       </el-form>
-
       <div style="text-align: right;">
         <!-- <el-button type="info" @click="showFormRowDate">showFormRowDate</el-button> -->
         <el-button type="info" @click="addRow">新增一行</el-button>
