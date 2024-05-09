@@ -9,6 +9,22 @@
           @keyup.enter="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="产品类型" prop="productTypeId">
+        <el-input
+          v-model="queryParams.productTypeId"
+          placeholder="请输入产品类型"
+          clearable
+          @keyup.enter="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="产品批次" prop="batch">
+        <el-input
+          v-model="queryParams.batch"
+          placeholder="请输入产品批次"
+          clearable
+          @keyup.enter="handleQuery"
+        />
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
         <el-button icon="Refresh" @click="resetQuery">重置</el-button>
@@ -59,9 +75,11 @@
 
     <el-table v-loading="loading" :data="productList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="产品编号" align="center" prop="id" />
-      <el-table-column label="客户编号" align="center" prop="customerId" />
+      <!-- <el-table-column label="产品编号" align="center" prop="id" /> -->
+      <el-table-column label="产品批次" align="center" prop="batch" />
+      <el-table-column label="客户名称" align="center" prop="customerId" />
       <el-table-column label="产品详细" align="center" prop="columnjson" />
+      <el-table-column label="产品类型" align="center" prop="productTypeId" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['qrcode:product:edit']">修改</el-button>
@@ -81,21 +99,37 @@
     <!-- 添加或修改产品信息对话框 -->
     <el-dialog :title="title" v-model="open" width="500px" append-to-body>
       <el-form ref="productRef" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="产品名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入产品名称" />
+        <el-form-item label="产品批号" prop="batch">
+          <el-input v-model="form.batch" placeholder="请输入产品批次编号" />
         </el-form-item>
-        <!-- <el-form-item label="产品详细" prop="columnjson">
+        <el-form-item label="客户名称" prop="customerId">
+          <!-- <el-input v-model="form.customerId" placeholder="请输入客户编号" /> -->
+          <el-select
+            v-model="form.customerId"
+            filterable
+            remote
+            reserve-keyword
+            placeholder="请输入客户的名称"
+            remote-show-suffix
+            :remote-method="remoteMethod"
+            :loading="loading"
+            style="width: 240px"
+          >
+            <el-option
+              v-for="item in options"
+              :key="item.id"
+              :label="item.cname"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="产品类型" prop="productTypeId">
+          <el-input v-model="form.productTypeId" placeholder="请输入产品类型" />
+        </el-form-item>
+        <el-form-item label="产品详细" prop="columnjson">
           <el-input v-model="form.columnjson" type="textarea" placeholder="请输入内容" />
-        </el-form-item> -->
-        <div class="flex gap-4" v-for="e in formRowDate" :key="e.k">
-          <el-input v-model="e.k" placeholder="产品字段" style="width: 80px;"/>
-          <el-input v-model="e.v" placeholder="请填入对应值" style="flex:1"/>
-        </div>
+        </el-form-item>
       </el-form>
-      <div style="text-align: right;">
-        <el-button type="info" @click="addRow">新增一行</el-button>
-        <el-button type="danger" @click="delRow">删除一行</el-button>
-      </div>
       <template #footer>
         <div class="dialog-footer">
           <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -108,31 +142,21 @@
 
 <script setup name="Product">
 import { listProduct, getProduct, delProduct, addProduct, updateProduct } from "@/api/qrcode/product";
+import { listCustomer, getCustomer, delCustomer, addCustomer, updateCustomer } from "@/api/qrcode/customer";
 
 const { proxy } = getCurrentInstance();
 
 const productList = ref([]);
 const open = ref(false);
-const loading = ref(true);
+const loading = ref(false);
 const showSearch = ref(true);
 const ids = ref([]);
 const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
-
-const formRowDate = reactive([]);
-
-function addRow() {
-  formRowDate.push({
-    k: "新增字段",
-    v:""
-  })
-}
-
-function delRow() {
-  formRowDate.pop();
-}
+ 
+const options = ref([]); 
 
 const data = reactive({
   form: {},
@@ -140,12 +164,19 @@ const data = reactive({
     pageNum: 1,
     pageSize: 10,
     customerId: null,
-    columnjson: null
+    productTypeId: null,
+    batch: null
   },
   rules: {
     customerId: [
-      { required: true, message: "产品名称不能为空", trigger: "blur" }
+      { required: true, message: "客户编号不能为空", trigger: "blur" }
     ],
+    productTypeId: [
+      { required: true, message: "产品类型不能为空", trigger: "blur" }
+    ],
+    batch: [
+      { required: true, message: "产品批次不能为空", trigger: "blur" }
+    ]
   }
 });
 
@@ -172,7 +203,9 @@ function reset() {
   form.value = {
     id: null,
     customerId: null,
-    columnjson: null
+    columnjson: null,
+    productTypeId: null,
+    batch: null
   };
   proxy.resetForm("productRef");
 }
@@ -201,6 +234,29 @@ function handleAdd() {
   reset();
   open.value = true;
   title.value = "添加产品信息";
+}
+
+function remoteMethod(query) {
+  console.debug(query)
+  if (query) {
+    loading.value = true
+    // setTimeout(() => {
+    //   loading.value = false
+    //   options.value =  [{label:"label1",value:"value1"},{label:"label2",value:"value2"}]
+    // }, 200)
+    listCustomer({
+                pageNum: 1,
+                pageSize: 10,
+                cname: query,
+              }).then(response => {
+                loading.value = false
+                options.value = response.rows          
+                console.debug(response.rows)
+    });
+    
+  } else {
+    options.value = []
+  }
 }
 
 /** 修改按钮操作 */
@@ -255,13 +311,3 @@ function handleExport() {
 
 getList();
 </script>
-<style scoped lang="scss">
-.flex{
-  display: flex;
-  align-items: center;
-}
-.gap-4{
-  gap: 4px;
-  margin-bottom: 18px;
-}
-</style>
