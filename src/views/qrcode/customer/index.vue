@@ -149,7 +149,7 @@ const formRowDate = ref([]);
 
 function addRow() {
   formRowDate.value.push({
-    k1: "新增字段",
+    k1: "",
     v:""
   })
 }
@@ -251,6 +251,7 @@ function handleUpdate(row) {
 function submitForm() {
   proxy.$refs["customerRef"].validate(valid => {
     if (valid) {
+      form.value.columnjson = JSON.stringify(formRowDate.value);
       if (form.value.id != null) {
         updateCustomer(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
@@ -263,7 +264,6 @@ function submitForm() {
         // console.log(formRowDate.target)
         // console.log(formRowDate[0])
         // console.log(formRowDate[0].k)
-        form.value.columnjson = JSON.stringify(formRowDate.value);
         addCustomer(form.value).then(response => {
           proxy.$modal.msgSuccess("新增成功");
           open.value = false;

@@ -9,6 +9,15 @@ export function listProduct(query) {
   })
 }
 
+// 查询产品信息列表
+export function listProduct2(query) {
+  return request({
+    url: '/qrcode/product/list2',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询产品信息详细
 export function getProduct(id) {
   return request({

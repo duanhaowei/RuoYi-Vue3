@@ -67,15 +67,11 @@
         <el-form-item label="产品名称" prop="pname">
           <el-input v-model="form.pname" placeholder="请输入产品名称" />
         </el-form-item>
-        <el-form-item label="技术文档" prop="doc" >
+        <el-form-item label="技术文档" prop="doc">
           <div style="display: flex;">
-            <el-input v-model="form.doc" placeholder="请输入技术文档" :disabled="true" :readonly="true"/>
-            <el-button
-            type="info"
-            plain
-            icon="Upload"
-            @click="handleImport"
-            v-hasPermi="['system:user:import']">导入</el-button>
+            <el-input v-model="form.doc" placeholder="请输入技术文档" :disabled="true" :readonly="true" />
+            <el-button type="info" plain icon="Upload" @click="handleImport"
+              v-hasPermi="['system:user:import']">导入</el-button>
           </div>
         </el-form-item>
         <div class="flex gap-4" v-for="e in formRowDate" :key="e.k">
@@ -119,7 +115,6 @@
       </template>
     </el-dialog>
   </div>
-
 </template>
 
 <script setup name="Producttype">
@@ -236,6 +231,7 @@ function handleUpdate(row) {
 function submitForm() {
   proxy.$refs["producttypeRef"].validate(valid => {
     if (valid) {
+      form.value.columnjson = JSON.stringify(formRowDate.value);
       if (form.value.id != null) {
         updateProducttype(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
@@ -243,7 +239,6 @@ function submitForm() {
           getList();
         });
       } else {
-        form.value.columnjson = JSON.stringify(formRowDate.value);
         addProducttype(form.value).then(response => {
           proxy.$modal.msgSuccess("新增成功");
           open.value = false;
