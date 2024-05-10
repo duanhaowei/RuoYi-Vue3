@@ -196,7 +196,7 @@
           <div class="title-text">
            {{qrtitle}}
           </div>
-          <qrcode-vue :value="qrvalue" :size="size" level="H" :background="background" foreground="#000000"
+          <qrcode-vue :value="qrvalue" :size="size" level="H" background="#e3e2de" foreground="#000000"
             class="qrcodeimg" />
           <div class="qrcode-text">
             {{qrvalue}}
@@ -456,7 +456,7 @@ function qrcode(row) {
 
 function printQrcode() {
   qrVisible.value = false;
-  console.log(row)
+  onSubmitCode();
 }
 
 const imgView = ref();
@@ -464,7 +464,7 @@ const qrtitle = ref("xxxxx有限公司");
 const qrvalue = ref("");
 const size = ref(280);
 
-function onSubmitCode(img) {
+function onSubmitCode() {
       // let imgTag = imgView[img]
       console.info(imgView)
       console.info(imgView.value)
